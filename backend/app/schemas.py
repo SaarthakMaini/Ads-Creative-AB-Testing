@@ -27,9 +27,9 @@ class ABTestOut(BaseModel):
     id: int
     product_id: int
     variant_ids: List[int]
-    start_date: datetime
-    end_date: Optional[datetime]
-    status: str
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    status: Optional[str] = None
 
 class PerformanceCreate(BaseModel):
     test_id: int
@@ -41,3 +41,5 @@ class PerformanceCreate(BaseModel):
 class PerformanceOut(PerformanceCreate):
     id: int
     timestamp: datetime
+    class Config:
+        orm_mode = True

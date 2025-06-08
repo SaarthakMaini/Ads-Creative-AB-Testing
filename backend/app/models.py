@@ -36,6 +36,12 @@ class ABTest(Base):
     end_date = Column(DateTime, nullable=True)
     status = Column(String, default="running")
 
+    @property
+    def variant_ids_list(self):
+        if self.variant_ids:
+            return list(map(int, self.variant_ids.split(',')))
+        return []
+
 
 class Performance(Base):
     __tablename__ = "performance"

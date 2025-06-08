@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import schemas, crud
 from app.db import SessionLocal
@@ -17,3 +17,10 @@ def create(test: schemas.ABTestCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=list[schemas.ABTestOut])
 def read_all(db: Session = Depends(get_db)):
     return crud.get_abtests(db)
+
+@router.get("/{test_id}", response_model=schemas.ABTestOut)
+def read_abtest(abtest_id: int, db: Session = Depends(get_db)):
+    abtest = crud.get_abtest_by_id(db, abtest_id)
+    if abtest is None:
+        raise HTTPException(status_code=404, detail="ABTest not found")
+    return abtest

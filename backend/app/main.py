@@ -6,11 +6,11 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(product.router)
-app.include_router(creative.router)
-app.include_router(abtest.router)
-app.include_router(performance.router)
+app.include_router(product.router, prefix="/products", tags=["Products"])
+app.include_router(creative.router, prefix="/creatives", tags=["Creatives"])
+app.include_router(abtest.router, prefix="/tests", tags=["AB Tests"])
+app.include_router(performance.router, prefix="/performance", tags=["Performance"])
 
 @app.get("/")
-def root():
-    return {"message": "Ad Creative A/B Testing API"}
+def home():
+    return {"Home Page": "Ad Creative A/B Testing API"}

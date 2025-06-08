@@ -14,6 +14,8 @@ def get_db():
 def create(product: schemas.ProductCreate, db: Session = Depends(get_db)):
     return crud.create_product(db, product)
 
+
+
 @router.get("/", response_model=list[schemas.ProductOut])
 def read_all(db: Session = Depends(get_db)):
     return crud.get_products(db)
