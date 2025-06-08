@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 from datetime import datetime
 from . import models, schemas
+from .models import Creative, Performance
 
 # Product
 def create_product(db: Session, product: schemas.ProductCreate):
@@ -121,3 +122,26 @@ def get_performance_by_test(db: Session, test_id: int):
 
 def get_creatives(db: Session):
     return db.query(models.Creative).all()
+
+def calculate_metrics(product_id: int, db: Session):
+    variants = db.query(Creative).filter(Creative.product_id == product_id).all()
+    result = []
+
+    for variant in variants:
+        performances = db.query(Performance).filter(Performance.variant_id == variant.id).all()
+        impressions = sum(p.impressions for p in performances)
+        clicks = sum(p.clicks for p in performances)
+        conversions = sum(p.conversions for p in performances)
+
+        ctr = clicks / impressions if impressions else 0
+        cvr = conversions / clicks if clicks else 0
+        imp_to_conv = conversions / impressions if impressions else 0
+
+        result.append({
+            "variant_id": variant.id,
+            "ctr": round(ctr, 4),
+            "cvr": round(cvr, 4),
+            "impression_to_conversion": round(imp_to_conv, 4),
+        })
+
+    return result

@@ -46,3 +46,7 @@ def simulate_performance(test_id: int, db: Session = Depends(get_db)):
         data.append(crud.log_performance(db, record))
 
     return data
+
+@router.get("/metrics")
+def get_metrics(product_id: int, db: Session = Depends(get_db)):
+    return crud.calculate_metrics(product_id, db)
