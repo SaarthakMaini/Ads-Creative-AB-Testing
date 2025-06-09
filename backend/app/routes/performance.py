@@ -47,3 +47,10 @@ def simulate_performance(test_id: int, db: Session = Depends(get_db), current_us
 @router.get("/metrics")
 def get_metrics(product_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     return crud.calculate_metrics(product_id, db, user_id=current_user.id)
+
+@router.get("/suggest/{abtest_id}")
+def suggest_best_creative_route(abtest_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    result = crud.suggest_best_creative(db, abtest_id, user_id=current_user.id)
+    if not result:
+        return {"message": "No creatives found or no performance data available."}
+    return result

@@ -73,7 +73,9 @@ def get_products(db: Session, user_id: int):
 # Creative
 
 def create_creative(db: Session, creative: schemas.CreativeCreate, user_id: int):
-    db_creative = models.Creative(**creative.dict(), user_id=user_id)
+    data = creative.dict()
+    data['user_id'] = user_id  # Overwrite or set user_id
+    db_creative = models.Creative(**data)
     db.add(db_creative)
     db.commit()
     db.refresh(db_creative)
@@ -139,7 +141,9 @@ def get_abtest_by_id(db: Session, abtest_id: int, user_id: int):
     }
 
 def log_performance(db: Session, perf: schemas.PerformanceCreate, user_id: int):
-    record = models.Performance(**perf.dict(), user_id=user_id)
+    data = perf.dict()
+    data['user_id'] = user_id  # Overwrite or set user_id
+    record = models.Performance(**data)
     db.add(record)
     db.commit()
     db.refresh(record)
@@ -166,3 +170,28 @@ def calculate_metrics(product_id: int, db: Session, user_id: int):
             "impression_to_conversion": round(imp_to_conv, 4),
         })
     return result
+
+def suggest_best_creative(db: Session, abtest_id: int, user_id: int):
+    abtest = db.query(models.ABTest).filter(models.ABTest.id == abtest_id, models.ABTest.user_id == user_id).first()
+    if not abtest:
+        return None
+    variant_ids = abtest.variant_ids_list
+    best_cvr = -1
+    best_creative = None
+    for vid in variant_ids:
+        performances = db.query(models.Performance).filter(models.Performance.variant_id == vid, models.Performance.user_id == user_id).all()
+        clicks = sum(p.clicks for p in performances)
+        conversions = sum(p.conversions for p in performances)
+        cvr = conversions / clicks if clicks else 0
+        if cvr > best_cvr:
+            best_cvr = cvr
+            best_creative = db.query(models.Creative).filter(models.Creative.id == vid).first()
+    if best_creative:
+        return {
+            "id": best_creative.id,
+            "headline": best_creative.headline,
+            "description": best_creative.description,
+            "image_url": best_creative.image_url,
+            "cvr": round(best_cvr, 4)
+        }
+    return None
